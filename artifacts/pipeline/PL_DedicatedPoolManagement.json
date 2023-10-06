@@ -1,0 +1,198 @@
+{
+	"name": "PL_DedicatedPoolManagement",
+	"properties": {
+		"activities": [
+			{
+				"name": "GET List",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat('https://management.azure.com/subscriptions/',pipeline().parameters.SubscriptionID,'/resourceGroups/',pipeline().parameters.ResourceGroup,'/providers/Microsoft.Synapse/workspaces/',pipeline().parameters.WorkspaceName,'/sqlPools?api-version=2021-06-01-preview')",
+						"type": "Expression"
+					},
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://management.azure.com/"
+					}
+				}
+			},
+			{
+				"name": "Filter_PROD",
+				"type": "Filter",
+				"dependsOn": [
+					{
+						"activity": "GET List",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('GET List').output.value",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@not(endswith(item().name,'prod'))",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Filter_PROD",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"activities": [
+						{
+							"name": "Check State",
+							"type": "WebActivity",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"url": {
+									"value": "@concat('https://management.azure.com/subscriptions/',pipeline().parameters.SubscriptionID,'/resourceGroups/',pipeline().parameters.ResourceGroup,'/providers/Microsoft.Synapse/workspaces/',pipeline().parameters.WorkspaceName,'/sqlPools/',item().name,'?api-version=2021-06-01-preview')",
+									"type": "Expression"
+								},
+								"connectVia": {
+									"referenceName": "AutoResolveIntegrationRuntime",
+									"type": "IntegrationRuntimeReference"
+								},
+								"method": "GET",
+								"authentication": {
+									"type": "MSI",
+									"resource": "https://management.azure.com/"
+								}
+							}
+						},
+						{
+							"name": "Switch1",
+							"type": "Switch",
+							"dependsOn": [
+								{
+									"activity": "Check State",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"on": {
+									"value": "@concat(activity('Check State').output.properties.status,'-',pipeline().parameters.PauseOrResume)",
+									"type": "Expression"
+								},
+								"cases": [
+									{
+										"value": "Paused-Resume",
+										"activities": [
+											{
+												"name": "SQLPoolResume",
+												"type": "WebActivity",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"url": {
+														"value": "@concat('https://management.azure.com/subscriptions/',pipeline().parameters.SubscriptionID,'/resourceGroups/',pipeline().parameters.ResourceGroup,'/providers/Microsoft.Synapse/workspaces/',pipeline().parameters.WorkspaceName,'/sqlPools/',activity('Check State').output.name,'/resume?api-version=2021-06-01-preview')",
+														"type": "Expression"
+													},
+													"connectVia": {
+														"referenceName": "AutoResolveIntegrationRuntime",
+														"type": "IntegrationRuntimeReference"
+													},
+													"method": "POST",
+													"authentication": {
+														"type": "MSI",
+														"resource": "https://management.azure.com/"
+													}
+												}
+											}
+										]
+									},
+									{
+										"value": "Online-Resume",
+										"activities": [
+											{
+												"name": "Web1",
+												"type": "WebActivity",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"connectVia": {
+														"referenceName": "AutoResolveIntegrationRuntime",
+														"type": "IntegrationRuntimeReference"
+													}
+												}
+											}
+										]
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"ResourceGroup": {
+				"type": "string"
+			},
+			"SubscriptionID": {
+				"type": "string"
+			},
+			"WorkspaceName": {
+				"type": "string"
+			},
+			"SQLPoolName": {
+				"type": "string"
+			},
+			"PauseorResume": {
+				"type": "string"
+			}
+		},
+		"annotations": []
+	}
+}
