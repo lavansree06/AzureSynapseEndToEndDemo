@@ -5,6 +5,8 @@
 			{
 				"name": "NDJSON_Ingestion_Claim",
 				"type": "SynapseNotebook",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
@@ -140,6 +142,9 @@
 							},
 							"wildcardFileName": "*.parquet",
 							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "ParquetReadSettings"
 						}
 					},
 					"sink": {
