@@ -65,6 +65,10 @@
 				],
 				"userProperties": [],
 				"typeProperties": {
+					"items": {
+						"value": "@activity('Filter_PROD').output.value",
+						"type": "Expression"
+					},
 					"activities": [
 						{
 							"name": "Check State",
@@ -95,7 +99,7 @@
 							}
 						},
 						{
-							"name": "Switch1",
+							"name": "State-PauseOrResume",
 							"type": "Switch",
 							"dependsOn": [
 								{
@@ -146,10 +150,10 @@
 										]
 									},
 									{
-										"value": "Online-Resume",
+										"value": "Online-Pause",
 										"activities": [
 											{
-												"name": "Web1",
+												"name": "SQLPoolPause",
 												"type": "WebActivity",
 												"dependsOn": [],
 												"policy": {
@@ -161,9 +165,18 @@
 												},
 												"userProperties": [],
 												"typeProperties": {
+													"url": {
+														"value": "@concat('https://management.azure.com/subscriptions/',pipeline().parameters.SubscriptionID,'/resourceGroups/',pipeline().parameters.ResourceGroup,'/providers/Microsoft.Synapse/workspaces/',pipeline().parameters.WorkspaceName,'/sqlPools/',activity('Check State').output.name,'/pause?api-version=2021-06-01-preview')",
+														"type": "Expression"
+													},
 													"connectVia": {
 														"referenceName": "AutoResolveIntegrationRuntime",
 														"type": "IntegrationRuntimeReference"
+													},
+													"method": "POST",
+													"authentication": {
+														"type": "MSI",
+														"resource": "https://management.azure.com/"
 													}
 												}
 											}
@@ -178,19 +191,24 @@
 		],
 		"parameters": {
 			"ResourceGroup": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "rgsynapseendtoend"
 			},
 			"SubscriptionID": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "b0b8d9e6-3c01-4388-9ea1-d73d4007f480"
 			},
 			"WorkspaceName": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "wssynapsedemo"
 			},
 			"SQLPoolName": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "dedicatedpooldemo"
 			},
 			"PauseorResume": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "Pause"
 			}
 		},
 		"annotations": []
