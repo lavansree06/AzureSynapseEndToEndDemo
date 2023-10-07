@@ -23,6 +23,7 @@
 						"referenceName": "AutoResolveIntegrationRuntime",
 						"type": "IntegrationRuntimeReference"
 					},
+					"method": "GET",
 					"authentication": {
 						"type": "MSI",
 						"resource": "https://management.azure.com/"
@@ -141,6 +142,7 @@
 														"type": "IntegrationRuntimeReference"
 													},
 													"method": "POST",
+													"body": "\"Pause and Resume\"",
 													"authentication": {
 														"type": "MSI",
 														"resource": "https://management.azure.com/"
@@ -174,6 +176,7 @@
 														"type": "IntegrationRuntimeReference"
 													},
 													"method": "POST",
+													"body": "\"Pause and Resume\"",
 													"authentication": {
 														"type": "MSI",
 														"resource": "https://management.azure.com/"
