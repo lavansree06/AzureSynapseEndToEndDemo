@@ -113,7 +113,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"on": {
-									"value": "@concat(activity('Check State').output.properties.status,'-',pipeline().parameters.PauseOrResume)",
+									"value": "@concat(activity('Check State').output.properties.status,'-',pipeline().parameters.PauseorResume)",
 									"type": "Expression"
 								},
 								"cases": [
