@@ -214,6 +214,9 @@
 				"defaultValue": "Pause"
 			}
 		},
+		"folder": {
+			"name": "DedicatedPoolManagement"
+		},
 		"annotations": []
 	}
 }
